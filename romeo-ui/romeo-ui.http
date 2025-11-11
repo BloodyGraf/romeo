@@ -1,0 +1,6 @@
+@romeo_ui_HostAddress = http://localhost:5271
+
+GET {{romeo_ui_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
