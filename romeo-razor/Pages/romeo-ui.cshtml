@@ -1,0 +1,28 @@
+@page
+@model romeo_razor.Pages.romeo_ui
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Local WebRTC PoC</title>
+  <style>
+    body { background: #111; color: #eee; font-family: sans-serif; text-align: center; }
+    video { width: 45%; margin: 10px; border-radius: 8px; background: #000; }
+    button { margin-top: 20px; padding: 8px 16px; }
+  </style>
+</head>
+<body>
+<h2>🧠 WebRTC Local Test</h2>
+<video id="localVideo" autoplay playsinline muted></video>
+<video id="remoteVideo" autoplay playsinline></video>
+<div><button id="startBtn">Start Local Call</button></div>
+<div id="logs"></div>
+
+<script src="video-capture.js"></script>
+</body>
+</html>

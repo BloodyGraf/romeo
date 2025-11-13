@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="andromeo.MainPage"
+             BackgroundColor="Black">
+
+    <Grid RowDefinitions="Auto, *" ColumnDefinitions="*, *" Padding="10">
+        <Label Text="CameraX Preview"
+               Grid.ColumnSpan="2"
+               HorizontalOptions="Center"
+               VerticalOptions="Start"
+               TextColor="White"
+               FontSize="18"/>
+
+        <!-- Локальная камера -->
+        <GraphicsView x:Name="LocalPreview"
+                      Grid.Row="1"
+                      Grid.Column="0"
+                      BackgroundColor="Gray"/>
+
+        <!-- Placeholder для Remote видео (WebRTC) -->
+        <GraphicsView x:Name="RemotePreview"
+                      Grid.Row="1"
+                      Grid.Column="1"
+                      BackgroundColor="DarkGray"/>
+    </Grid>
+</ContentPage>
