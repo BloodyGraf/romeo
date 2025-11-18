@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "romeo-ui", "romeo-ui\romeo-
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "romeo-razor", "romeo-razor\romeo-razor.csproj", "{BF3D9925-6454-4226-A073-FC91E13743C9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "live-skide-playground", "live-skide-playground\live-skide-playground.csproj", "{2D0DED59-1CB3-47D1-ADEB-74026A9ED73C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{BF3D9925-6454-4226-A073-FC91E13743C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BF3D9925-6454-4226-A073-FC91E13743C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BF3D9925-6454-4226-A073-FC91E13743C9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2D0DED59-1CB3-47D1-ADEB-74026A9ED73C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2D0DED59-1CB3-47D1-ADEB-74026A9ED73C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2D0DED59-1CB3-47D1-ADEB-74026A9ED73C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2D0DED59-1CB3-47D1-ADEB-74026A9ED73C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
