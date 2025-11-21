@@ -1,58 +1,90 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <body>
 <h1>User A</h1>
 
-<video id="localVideo" autoplay playsinline muted></video>
-<video id="remoteVideo" autoplay playsinline></video>
+<video id="localVideo" autoplay playsinline muted style="width: 300px; border: 1px solid #555;"></video>
+<video id="remoteVideo" autoplay playsinline style="width: 300px; border: 1px solid #555;"></video>
 
 <script type="module">
     import {
         connect,
-        createLocalVideoTrack,
-        createLocalAudioTrack
-    } from "./livekit-client.esm.js"; // локальный sdk
+        createLocalTracks,
+    } from "./livekit-client.esm.js"; // ЛОКАЛЬНЫЙ SDK
 
     const LIVEKIT_URL = "ws://37.252.20.26:7880";
 
     async function getToken(identity) {
+        console.log("[A] Запрашиваю токен для", identity);
         const res = await fetch("http://localhost:3001/token", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ identity, room: "test-room" }),
         });
-        return (await res.json()).token;
+
+        if (!res.ok) {
+            console.error("[A] Ошибка при запросе токена", res.status);
+            throw new Error("Failed to get token");
+        }
+
+        const data = await res.json();
+        console.log("[A] Токен получен");
+        return data.token;
     }
 
     async function start() {
-        const token = await getToken("userA");
+        try {
+            const identity = "userA";
+            const token = await getToken(identity);
 
-        // Отключение simulcast — КРИТИЧЕСКО!
-        const room = await connect(LIVEKIT_URL, token, {
-            autoSubscribe: true,
-            publishDefaults: {
-                simulcast: false,
-                videoSimulcastLayers: [],
-            },
-        });
+            console.log("[A] Создаю локальные треки...");
+            const tracks = await createLocalTracks({
+                audio: true,
+                video: true,
+            });
+            console.log("[A] Локальные треки:", tracks.map(t => t.kind));
 
-        // создаём треки вручную
-        const video = await createLocalVideoTrack();
-        const audio = await createLocalAudioTrack();
-
-        // показываем локальное видео
-        document.getElementById("localVideo").srcObject =
-            new MediaStream([video.mediaStreamTrack]);
-
-        await room.localParticipant.publishTrack(video);
-        await room.localParticipant.publishTrack(audio);
-
-        room.on("trackSubscribed", (track, pub, participant) => {
-            if (track.kind === "video") {
-                document.getElementById("remoteVideo").srcObject =
-                    new MediaStream([track.mediaStreamTrack]);
+            // Показать локальное видео
+            const localVideoTrack = tracks.find(t => t.kind === "video");
+            if (localVideoTrack) {
+                const localVideoEl = document.getElementById("localVideo");
+                localVideoEl.srcObject = new MediaStream([localVideoTrack.mediaStreamTrack]);
+                console.log("[A] Локальное видео повесил на тег");
+            } else {
+                console.warn("[A] В локальных треках нет видео");
             }
-        });
+
+            console.log("[A] Подключаюсь к комнате...");
+            const room = await connect(LIVEKIT_URL, token, {
+                autoSubscribe: true,
+                publishDefaults: {
+                    simulcast: false,
+                },
+            });
+            console.log("[A] Подключился к комнате, localParticipant:", room.localParticipant.identity);
+
+            // Публикуем треки по одному
+            for (const t of tracks) {
+                console.log("[A] Публикую трек:", t.kind);
+                await room.localParticipant.publishTrack(t);
+            }
+            console.log("[A] Все треки опубликованы");
+
+            room.on("trackSubscribed", (track, pub, participant) => {
+                console.log("[A] trackSubscribed от", participant.identity, "kind=", track.kind);
+                if (track.kind === "video") {
+                    const remoteEl = document.getElementById("remoteVideo");
+                    remoteEl.srcObject = new MediaStream([track.mediaStreamTrack]);
+                    console.log("[A] Поставил remoteVideo");
+                }
+            });
+
+            room.on("trackUnsubscribed", (track, pub, participant) => {
+                console.log("[A] trackUnsubscribed", participant.identity, track.kind);
+            });
+        } catch (e) {
+            console.error("[A] ОШИБКА В start():", e);
+        }
     }
 
     start();
