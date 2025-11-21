@@ -165,3 +165,124 @@ OK
 •	добавить coturn
 •	развернуть token-server
 •	тестировать звонки с реальных устройств
+
+🧰 Шаг 1 — ставим coturn
+
+На VPS:
+apt install coturn -y
+
+🧰 Шаг 2 — включаем режим standalone TURN
+
+Редактируем конфиг:
+nano /etc/turnserver.conf
+
+Вставляем (это минимальная продовая конфигурация):
+
+listening-port=3478
+tls-listening-port=5349
+
+listening-ip=0.0.0.0
+relay-ip=0.0.0.0
+
+realm=romeo.live
+server-name=Romeo-TURN
+
+fingerprint
+lt-cred-mech
+use-auth-secret
+static-auth-secret=666blood666
+
+no-loopback-peers
+no-multicast-peers
+mobility
+
+🧰 Шаг 3 — открываем порты для TURN:
+
+На VPS:
+ufw allow 3478/udp
+ufw allow 5349/tcp
+
+Шаг 4 — запускаем TURN
+systemctl enable coturn
+systemctl restart coturn
+
+Проверка:
+netstat -tulnp | grep turnserver
+
+
+🧰 Шаг 5 — Добавляем TURN в LiveKit (dev-режим поддерживает!)
+
+Правим docker-compose.yml:
+
+services:
+livekit:
+image: livekit/livekit-server:latest
+container_name: livekit
+command: >
+--dev
+--bind 0.0.0.0
+--node-ip 0.0.0.0
+--port 7880
+--rtc.tcp_port 7881
+--turn.enabled=true
+--turn.domain=37.252.20.26
+--turn.port=3478
+--turn.tls_port=5349
+--turn.secret=666blood666
+ports:
+- "7880:7880"                     # сигналинг
+- "7881:7881"                     # fallback TCP media
+- "7882-7999:7882-7999/udp"       # WebRTC UDP media
+- "3478:3478/udp"                 # TURN UDP
+- "5349:5349"                     # TURN TLS
+- 
+  🎯 ШАГ 1 — создаём файл конфигурации LiveKit
+  mkdir -p /opt/livekit/config
+  nano /opt/livekit/config/livekit.yaml
+- 
+  Вставляем:
+- log_level: debug
+
+rtc:
+tcp_port: 7881
+udp_port: 7882
+use_external_ip: true
+
+turn:
+enabled: true
+domain: 37.252.20.26        # твой сервер
+udp_port: 3478
+tls_port: 5349
+secret: "MYSECRET"          # тот же secret, что в turnserver.conf
+
+# используем встроенный API ключ livekit (devkey/devsecret)
+# для prod — потом заменим
+apikey: "devkey"
+apisecret: "secret"
+
+# bind
+bind_addresses:
+- "0.0.0.0"
+
+
+
+ШАГ 2 — меняем docker-compose.yml, чтобы LiveKit читал config.yaml
+
+nano /opt/livekit/docker-compose.yml
+
+services:
+livekit:
+image: livekit/livekit-server:latest
+container_name: livekit
+command: >
+--config /livekit/config/livekit.yaml
+volumes:
+- ./config:/livekit/config
+ports:
+- "7880:7880"
+- "7881:7881"
+- "7882-7999:7882-7999/udp"
+- 
+- 
+  nano /opt/livekit/config/keys.txt
+- devkey: yxKq8HkVn3pT2fZ9eB4wL7xQ9tR5mD2c

@@ -2,15 +2,17 @@
 <html>
 <body>
 <h1>User B</h1>
-<video id="local" autoplay muted playsinline></video>
-<video id="remote" autoplay playsinline></video>
+
+<video id="localVideo" autoplay playsinline muted></video>
+<video id="remoteVideo" autoplay playsinline></video>
 
 <script type="module">
     import {
         connect,
-        createLocalVideoTrack,
-        createLocalAudioTrack,
+        createLocalTracks,
     } from "https://cdn.jsdelivr.net/npm/livekit-client/dist/livekit-client.esm.js";
+
+    const LIVEKIT_URL = "ws://37.252.20.26:7880";
 
     async function getToken(identity) {
         const res = await fetch("http://localhost:3001/token", {
@@ -18,35 +20,36 @@
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ identity, room: "test-room" }),
         });
-        return (await res.json()).token;
+        const { token } = await res.json();
+        return token;
     }
 
     async function start() {
         const token = await getToken("userB");
+        const room = await connect(LIVEKIT_URL, token, { autoSubscribe: true });
 
-        const LIVEKIT_URL = "ws://37.252.20.26:7880";
-        const room = await connect(LIVEKIT_URL, token);
+        const tracks = await createLocalTracks({
+            audio: true,
+            video: true,
+        });
 
-        const videoTrack = await createLocalVideoTrack();
-        const audioTrack = await createLocalAudioTrack();
+        for (const t of tracks) room.localParticipant.publishTrack(t);
 
-        room.localParticipant.publishTrack(videoTrack);
-        room.localParticipant.publishTrack(audioTrack);
+        const localVideo = document.getElementById("localVideo");
+        localVideo.srcObject = new MediaStream(
+            tracks.filter(t => t.kind === "video").map(t => t.mediaStreamTrack)
+        );
 
-        document.getElementById("local").srcObject = new MediaStream([
-            videoTrack.mediaStreamTrack,
-        ]);
-
-        room.on("trackSubscribed", (track) => {
+        room.on("trackSubscribed", (track, pub, participant) => {
             if (track.kind === "video") {
-                document.getElementById("remote").srcObject = new MediaStream([
-                    track.mediaStreamTrack,
-                ]);
+                const remoteVideo = document.getElementById("remoteVideo");
+                remoteVideo.srcObject = new MediaStream([track.mediaStreamTrack]);
             }
         });
     }
 
     start();
 </script>
+
 </body>
 </html>

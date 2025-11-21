@@ -2,7 +2,7 @@ import http from "http";
 import crypto from "crypto";
 
 const API_KEY = "devkey";
-const API_SECRET = "secret";
+const API_SECRET = "yxKq8HkVn3pT2fZ9eB4wL7xQ9tR5mD2c"; // тот, что в keys.txt
 
 // ---- JWT helpers ----
 
