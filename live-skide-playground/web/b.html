@@ -24,7 +24,8 @@
     async function start() {
         const token = await getToken("userB");
 
-        const room = await connect("ws://localhost:7880", token);
+        const LIVEKIT_URL = "ws://37.252.20.26:7880";
+        const room = await connect(LIVEKIT_URL, token);
 
         const videoTrack = await createLocalVideoTrack();
         const audioTrack = await createLocalAudioTrack();
