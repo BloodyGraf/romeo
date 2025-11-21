@@ -9,8 +9,9 @@
 <script type="module">
     import {
         connect,
-        createLocalTracks,
-    } from "https://cdn.jsdelivr.net/npm/livekit-client/dist/livekit-client.esm.js";
+        createLocalVideoTrack,
+        createLocalAudioTrack
+    } from "./livekit-client.esm.js"; // локальный sdk
 
     const LIVEKIT_URL = "ws://37.252.20.26:7880";
 
@@ -20,40 +21,41 @@
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ identity, room: "test-room" }),
         });
-        const { token } = await res.json();
-        return token;
+        return (await res.json()).token;
     }
 
     async function start() {
         const token = await getToken("userA");
-        const room = await connect(LIVEKIT_URL, token, { autoSubscribe: true });
 
-        // local tracks
-        const tracks = await createLocalTracks({
-            audio: true,
-            video: true,
+        // Отключение simulcast — КРИТИЧЕСКО!
+        const room = await connect(LIVEKIT_URL, token, {
+            autoSubscribe: true,
+            publishDefaults: {
+                simulcast: false,
+                videoSimulcastLayers: [],
+            },
         });
 
-        // publish tracks one-by-one
-        for (const t of tracks) room.localParticipant.publishTrack(t);
+        // создаём треки вручную
+        const video = await createLocalVideoTrack();
+        const audio = await createLocalAudioTrack();
 
-        // show local video
-        const localVideo = document.getElementById("localVideo");
-        localVideo.srcObject = new MediaStream(
-            tracks.filter(t => t.kind === "video").map(t => t.mediaStreamTrack)
-        );
+        // показываем локальное видео
+        document.getElementById("localVideo").srcObject =
+            new MediaStream([video.mediaStreamTrack]);
 
-        // remote track
+        await room.localParticipant.publishTrack(video);
+        await room.localParticipant.publishTrack(audio);
+
         room.on("trackSubscribed", (track, pub, participant) => {
             if (track.kind === "video") {
-                const remoteVideo = document.getElementById("remoteVideo");
-                remoteVideo.srcObject = new MediaStream([track.mediaStreamTrack]);
+                document.getElementById("remoteVideo").srcObject =
+                    new MediaStream([track.mediaStreamTrack]);
             }
         });
     }
 
     start();
 </script>
-
 </body>
 </html>
