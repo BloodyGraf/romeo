@@ -314,9 +314,3 @@ docker compose pull
 docker compose up -d
 
 cd /opt/livekit-server
-
-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
-
-
-ssh root@37.252.20.26
-kUMbQM@d2bi3s?
