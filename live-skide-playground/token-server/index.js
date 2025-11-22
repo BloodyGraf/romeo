@@ -2,7 +2,7 @@ import http from "http";
 import crypto from "crypto";
 
 const API_KEY = "devkey";
-const API_SECRET = "secret"; // тот, что в keys.txt
+const API_SECRET = "supersecretverylongsupersecretverylong"; // тот, что в keys.txt
 // ---- JWT helpers ----
 
 function base64url(input) {
