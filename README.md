@@ -285,4 +285,38 @@ ports:
 - 
 - 
   nano /opt/livekit/config/keys.txt
-- devkey: yxKq8HkVn3pT2fZ9eB4wL7xQ9tR5mD2c
+
+СБОРКА AMD64 ОБРАЗА ЛОКАЛЬНО НА МАКЕ ЧЕРЕЗ QEMU (docker buildx)
+1. Активировать buildx:
+   docker buildx create --use
+
+2. Собрать multi-arch образ:
+   docker buildx build --platform linux/amd64 -t bloodbear/livekit-server:v1.12 . --push
+
+cd /opt/livekit
+docker compose pull
+docker compose up -d
+
+
+
+
+nano docker-compose.yml
+
+docker images | grep livekit
+
+docker rmi livekit/livekit-server:latest
+docker rmi bloodbear/livekit:v1.12
+
+
+cd /opt/livekit
+docker compose down
+docker compose pull
+docker compose up -d
+
+cd /opt/livekit-server
+
+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
+
+
+ssh root@37.252.20.26
+kUMbQM@d2bi3s?
